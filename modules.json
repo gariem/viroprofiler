@@ -1,34 +1,49 @@
 {
     "name": "ViroProfiler",
-    "homePage": "https://github.com/rujinlong/viroprofiler",
+    "homePage": "https://github.com/deng-lab/viroprofiler",
     "repos": {
-        "nf-core/modules": {
-            "bbmap/align": {
-                "git_sha": "848ee9a215d02d80be033bfa60881700f2bd914c"
+        "https://github.com/nf-core/modules.git": {
+            "modules": {
+                "nf-core": {
+                    "bbmap/align": {
+                        "branch": "master",
+                        "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905",
+                        "installed_by": ["modules"]
+                    },
+                    "custom/dumpsoftwareversions": {
+                        "branch": "master",
+                        "git_sha": "82501fe6d0d12614db67751d30af98d16e63dc59",
+                        "installed_by": ["modules"]
+                    },
+                    "fastp": {
+                        "branch": "master",
+                        "git_sha": "2c70c1c1951aaf884d2e8d8d9c871db79f7b35aa",
+                        "installed_by": ["modules"]
+                    },
+                    "fastqc": {
+                        "branch": "master",
+                        "git_sha": "49b18b1639f4f7104187058866a8fab33332bdfe",
+                        "installed_by": ["modules"]
+                    },
+                    "megahit": {
+                        "branch": "master",
+                        "git_sha": "603ecbd9f45300c9788f197d2a15a005685b4220",
+                        "installed_by": ["modules"]
+                    },
+                    "multiqc": {
+                        "branch": "master",
+                        "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb",
+                        "installed_by": ["modules"]
+                    },
+                    "spades": {
+                        "branch": "master",
+                        "git_sha": "682f789f93070bd047868300dd018faf3d434e7c",
+                        "installed_by": ["modules"]
+                    }
+                }
             },
-            "bracken/bracken": {
-                "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c"
-            },
-            "bracken/combinebrackenoutputs": {
-                "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c"
-            },
-            "custom/dumpsoftwareversions": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "fastp": {
-                "git_sha": "7e8ad566883449e7939062b5e2bcf53fc1e0002f"
-            },
-            "fastqc": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "multiqc": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "kraken2/kraken2": {
-                "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c"
-            },
-            "spades": {
-                "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
+            "subworkflows": {
+                "nf-core": {}
             }
         }
     }

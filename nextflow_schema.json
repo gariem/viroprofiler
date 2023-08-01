@@ -87,10 +87,11 @@
             "properties": {
                 "assembler": {
                     "type": "string",
-                    "description": "Software used for genome assembly. Currently only SPAdes is supported.",
+                    "description": "Software used for genome assembly. Currently SPAdes and MEGAHIT are supported.",
                     "default": "spades",
                     "enum": [
-                        "spades"
+                        "spades",
+                        "megahit"
                     ],
                     "hidden": true
                 },

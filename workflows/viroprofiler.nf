@@ -37,6 +37,9 @@ include { INPUT_CHECK             } from '../subworkflows/local/input_check'
 include { vMAG_PHAMB; vMAG_VRHYME } from '../subworkflows/local/vMAG'
 include { SETUP } from '../subworkflows/local/init'
 
+include { ASSEMBLE } from '../subworkflows/local/assemble'
+include { PREPROCESS } from '../subworkflows/local/preprocess'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -48,14 +51,13 @@ include { SETUP } from '../subworkflows/local/init'
 //
 
 
-include { FASTQC                       } from '../modules/nf-core/modules/fastqc/main'
-include { MULTIQC                      } from '../modules/nf-core/modules/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS  } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
-include { FASTP                        } from '../modules/nf-core/modules/fastp/main'
-include { SPADES                       } from '../modules/nf-core/modules/spades/main'
-include { BBMAP_ALIGN                  } from '../modules/nf-core/modules/bbmap/align/main'
+// include { FASTQC                       } from '../modules/nf-core/fastqc/main'
+include { MULTIQC                      } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS  } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+// include { FASTP                        } from '../modules/nf-core/fastp/main'
+include { BBMAP_ALIGN                  } from '../modules/nf-core/bbmap/align/main'
 // local modules
-include { DECONTAM                     } from '../modules/local/decontam'
+// include { DECONTAM                     } from '../modules/local/decontam'
 include { CONTIGLIB; CONTIGLIB_CLUSTER } from '../modules/local/contig_library'
 include { MAPPING2CONTIGS; CONTIGINDEX; MAPPING2CONTIGS2; ABUNDANCE   } from '../modules/local/abundance'
 include { BRACKEN_DB; BRACKEN; BRACKEN_COMBINEBRACKENOUTPUTS } from '../modules/local/bracken'
@@ -95,61 +97,33 @@ workflow VIROPROFILER {
         if (params.reads_type == "clean") {
             ch_clean_reads = INPUT_CHECK.out.reads
         } else {
-            // MODULE: Run FastQC
-            FASTQC (
-                INPUT_CHECK.out.reads
-            )
-            ch_versions = ch_versions.mix(FASTQC.out.versions.first())
-
-            // MODULE: Run fastp
-            FASTP (
-                INPUT_CHECK.out.reads, false, false 
-            )
-            ch_versions = ch_versions.mix(FASTP.out.versions.first())
-
-            // Decontamination
-            if (params.use_decontam) {
-                ch_contamref = Channel.fromPath("${params.contamref_idx}", checkIfExists: true).first()
-                DECONTAM (FASTP.out.reads, ch_contamref)
-                ch_clean_reads = DECONTAM.out.reads
-                ch_versions = ch_versions.mix(DECONTAM.out.versions.first())
-            } else {
-                ch_clean_reads = FASTP.out.reads
-            }
-
-            ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
-            ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.collect{it[1]}.ifEmpty([]))
-
-            ch_clean_reads = FASTP.out.reads
+            //
+            // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+            //
+            PREPROCESS( INPUT_CHECK.out.reads )
+    
+            ch_clean_reads = PREPROCESS.out.ch_clean_reads
+            ch_versions = PREPROCESS.out.versions
+            ch_multiqc_files = PREPROCESS.out.ch_multiqc_files
         }
-
-
 
         // if input_contigs is specified, set ch_cclib to input_contigs, otherwise set to CONTIGLIB.out.cclib_long_ch
         if (params.input_contigs) {
             ch_cclib = Channel.fromPath("${params.input_contigs}", checkIfExists: true).first()
         } else {
-            // Run spades
-            SPADES (
-                ch_clean_reads.map { meta, fastq -> [ meta, fastq, [], [] ] },
-                []
-            )
-
-            // Use contigs or scaffolds
-            if ( params.assemblies == "contigs") {
-                assemblies = SPADES.out.contigs
-            } else {
-                assemblies = SPADES.out.scaffolds
-            }
+            //
+            // SUBWORKFLOW: Run assembler (spades/megahit)
+            //
+            ASSEMBLE ( ch_clean_reads )
 
             // Create contig library
             CONTIGLIB(
-                assemblies.map { meta, fasta -> [fasta] }.collect()
+                ASSEMBLE.out.assemblies.map { meta, fasta -> [fasta] }.collect()
             )
             ch_cclib = CONTIGLIB.out.cclib_long_ch
 
             // Extract versions
-            ch_versions = ch_versions.mix(SPADES.out.versions.first())
+            ch_versions = ch_versions.mix(ASSEMBLE.out.versions)
             ch_versions = ch_versions.mix(CONTIGLIB.out.versions)
         }
 

@@ -24,6 +24,7 @@ WorkflowMain.initialise(workflow, params, log)
 */
 
 include { VIROPROFILER } from './workflows/viroprofiler'
+include { ASSEMBLER } from './workflows/assembler'
 
 
 /*
@@ -37,6 +38,10 @@ include { VIROPROFILER } from './workflows/viroprofiler'
 //
 workflow {
     VIROPROFILER ()
+}
+
+workflow ASM {
+    ASSEMBLER ()
 }
 
 /*
