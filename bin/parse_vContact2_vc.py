@@ -42,6 +42,9 @@ def main(fin, fout_prefix, assembler):
     if assembler == "spades":
         # All spades contig names contain "Node_"
         assembler_id = "NODE_"
+    elif assembler == "megahit":
+        # All megahit contig names contain "k[xyz]"
+        assembler_id = "k"
     elif assembler == "other":
         # All vConTACT2 reference genome names contain "~"
         assembler_id = "~"
